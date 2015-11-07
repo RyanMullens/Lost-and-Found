@@ -8,6 +8,12 @@ import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
@@ -22,16 +28,17 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 
-
-
-public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
+public class SearchMapsActivity extends FragmentActivity implements OnMapReadyCallback,
         GoogleMap.OnMapClickListener, GoogleMap.OnMapLongClickListener, ConnectionCallbacks, OnConnectionFailedListener {
 
     private GoogleMap mMap;
     private GoogleApiClient mGoogleApiClient;
     private ArrayList<LatLng> clickedPoints;
+    private ArrayList<LatLng> initialPoints;
     private int drawMode;
     private final int POINT = 0;
     private final int PATH = 1;
@@ -42,14 +49,18 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_map);
+        setContentView(R.layout.activity_search_maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
         clickedPoints = new ArrayList<LatLng>();
-        drawMode = POINT;
+        initialPoints = new ArrayList<LatLng>();
+
+
+
+        drawMode = PATH;
         buildGoogleApiClient();
 
     }
@@ -79,13 +90,11 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
         mMap.setOnMapClickListener(this);
         mMap.setOnMapLongClickListener(this);
-
-
+        drawSearchPoints();
     }
 
     public void onMapClick(LatLng point) {
         clickedPoints.add(point);
-        mMap.clear();
         drawClickedPoints();
     }
 
@@ -97,16 +106,14 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         drawClickedPoints();
     }
 
-    private void drawClickedPoints() {
-        mMap.clear();
-
-        if (clickedPoints.size() == 0) {
+    private void drawSearchPoints() {
+        if (initialPoints.size() == 0) {
             return;
         }
 
         switch (drawMode) {
             case POINT:
-                for (LatLng point : clickedPoints) {
+                for (LatLng point : initialPoints) {
                     MarkerOptions markerOptions = new MarkerOptions().position(point);
                     mMap.addMarker(markerOptions);
                 }
@@ -115,7 +122,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             case AREA:
                 PolygonOptions polygonOptions = new PolygonOptions();
 
-                for (LatLng point : clickedPoints) {
+                for (LatLng point : initialPoints) {
                     polygonOptions.add(point);
                 }
 
@@ -125,7 +132,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             case PATH:
                 PolylineOptions polylineOptions = new PolylineOptions();
 
-                for (LatLng point : clickedPoints) {
+                for (LatLng point : initialPoints) {
                     polylineOptions.add(point);
                 }
 
@@ -135,6 +142,61 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             default:
                 Log.d("DRAW", "NOTHING");
         }
+    }
+
+    private void drawClickedPoints() {
+        mMap.clear();
+        drawSearchPoints();
+
+        if (clickedPoints.size() == 0) {
+            return;
+        }
+
+        switch (drawMode) {
+            default:
+                for (LatLng point : clickedPoints) {
+                    MarkerOptions markerOptions = new MarkerOptions().position(point);
+                    mMap.addMarker(markerOptions);
+                }
+
+                break;
+        }
+    }
+
+
+    private void getList() {
+
+        // Instantiate the RequestQueue.
+        RequestQueue queue = Volley.newRequestQueue(this);
+
+        Intent myIntent = getIntent();
+        String id = myIntent.getStringExtra("id");
+        String url ="http://72.19.65.87:3000/lost/"+id;
+
+        // Request a string response from the provided URL.
+        JsonObjectRequest stringRequest = new JsonObjectRequest(Request.Method.GET, url, null,
+                new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        // Display the first 500 characters of the response string.
+                        try {
+                            Log.d("HEY", response.toString());
+
+                        } catch (Exception e) {
+
+                        }
+
+
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.d("HEY", "did not work");
+            }
+        });
+        // Add the request to the RequestQueue.
+        queue.add(stringRequest);
     }
 
     public void changeModeToPath(View view) {
@@ -160,6 +222,13 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         mMap.addMarker(new MarkerOptions().position(currentLocation).title("Marker in current location"));
 
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 14));
+
+        double currentLat = currentLocation.latitude;
+        double currentLng = currentLocation.longitude;
+        initialPoints.add(new LatLng(currentLat + 0.01, currentLng - 0.01));
+        initialPoints.add(new LatLng(currentLat, currentLng + 0.01));
+        initialPoints.add(new LatLng(currentLat - 0.01, currentLng));
+        drawSearchPoints();
     }
 
     @Override
@@ -179,6 +248,22 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         returnIntent.putExtra("list", clickedPoints);
         setResult(Activity.RESULT_OK, returnIntent);
         finish();
+    }
+
+    public void submit(View view){
+        Intent returnIntent = new Intent();
+
+        setResult(Activity.RESULT_OK, returnIntent);
+        finish();
+    }
+
+    public void addPoints(View view) {
+
+    }
+
+    public void foundItem(View view) {
+        Intent mapIntent = new Intent(this, FoundActivity.class);
+        startActivityForResult(mapIntent, 1);
     }
 
 }
