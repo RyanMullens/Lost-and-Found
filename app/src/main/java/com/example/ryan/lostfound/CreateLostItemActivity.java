@@ -68,7 +68,7 @@ public class CreateLostItemActivity extends AppCompatActivity {
 
                     @Override
                     public void onResponse(JSONObject response) {
-                        Toast.makeText(CreateLostItemActivity.this, response.toString(), Toast.LENGTH_SHORT).show();
+
                     }
                 }, new Response.ErrorListener() {
 
@@ -83,14 +83,10 @@ public class CreateLostItemActivity extends AppCompatActivity {
         queue.add(jsObjRequest);
 
 
-
-
-        Toast.makeText(CreateLostItemActivity.this, "Create new lost item", Toast.LENGTH_SHORT).show();
+        Toast.makeText(CreateLostItemActivity.this, "Created new lost item", Toast.LENGTH_SHORT).show();
     }
 
     public void getLocation(View view){
-        Toast.makeText(CreateLostItemActivity.this, "Would get location", Toast.LENGTH_SHORT).show();
-
         Intent mapIntent = new Intent(this, MapActivity.class);
         startActivityForResult(mapIntent, 1);
     }
@@ -127,9 +123,6 @@ public class CreateLostItemActivity extends AppCompatActivity {
                 }catch(Exception e){
                     Toast.makeText(CreateLostItemActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
-
-                //Toast.makeText(CreateLostItemActivity.this, type, Toast.LENGTH_SHORT).show();
-                //Toast.makeText(CreateLostItemActivity.this, ""+list.get(0).latitude, Toast.LENGTH_SHORT).show();
             }
         }
     }

@@ -98,7 +98,6 @@ public class SearchMapsActivity extends FragmentActivity implements OnMapReadyCa
                                 double lat = j.getJSONObject(i).getDouble("lat");
                                 double lng = j.getJSONObject(i).getDouble("long");
                                 initialPoints.add(new LatLng(lat, lng));
-                                //Toast.makeText(SearchMapsActivity.this, ""+i + " " + lat + " " + lng, Toast.LENGTH_LONG).show();
                             }
 
                             JSONArray checked = response.getJSONArray("checkedLocations");
@@ -107,9 +106,8 @@ public class SearchMapsActivity extends FragmentActivity implements OnMapReadyCa
                                 double lat = checked.getJSONObject(i).getDouble("lat");
                                 double lng = checked.getJSONObject(i).getDouble("long");
                                 checkedPoints.add(new LatLng(lat, lng));
-                                //Toast.makeText(SearchMapsActivity.this, ""+i + " " + lat + " " + lng, Toast.LENGTH_LONG).show();
                             }
-                            //
+
                             drawMap();
 
                         } catch (Exception e) {
@@ -180,9 +178,6 @@ public class SearchMapsActivity extends FragmentActivity implements OnMapReadyCa
         if (initialPoints.size() == 0) {
             return;
         }
-
-        Toast.makeText(SearchMapsActivity.this, "" + initialPoints.get(0).latitude + " ", Toast.LENGTH_LONG).show();
-
 
         switch (drawMode) {
             case POINT:
@@ -304,7 +299,6 @@ public class SearchMapsActivity extends FragmentActivity implements OnMapReadyCa
         Intent myIntent = getIntent();
         String id = myIntent.getStringExtra("id");
         String url ="http://72.19.65.87:3000/lost/"+id +"/check";
-        Toast.makeText(SearchMapsActivity.this, url, Toast.LENGTH_LONG).show();
 
         JSONArray points = new JSONArray();
         JSONObject body = new JSONObject();
@@ -327,7 +321,7 @@ public class SearchMapsActivity extends FragmentActivity implements OnMapReadyCa
 
                     @Override
                     public void onResponse(JSONObject response) {
-                        Toast.makeText(SearchMapsActivity.this, response.toString(), Toast.LENGTH_LONG).show();
+
                         checkedPoints.addAll(clickedPoints);
                         clickedPoints.clear();
                         drawMap();
@@ -335,7 +329,7 @@ public class SearchMapsActivity extends FragmentActivity implements OnMapReadyCa
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.d("HEY", error.getMessage());
+                Toast.makeText(SearchMapsActivity.this, error.toString(), Toast.LENGTH_LONG).show();
             }
         });
         // Add the request to the RequestQueue.

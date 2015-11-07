@@ -8,7 +8,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -52,11 +51,6 @@ public class ListLostItemsActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
 
-                // list.remove(item);
-                // adapter.notifyDataSetChanged();
-
-
-                Toast.makeText(ListLostItemsActivity.this, item, Toast.LENGTH_SHORT).show();
                 goToMap(item);
             }
         });
@@ -71,11 +65,7 @@ public class ListLostItemsActivity extends AppCompatActivity {
     }
 
     private void getList() {
-        // getWebsite();
-        // Log.d("MESSAGE", "STARTED");
-
-        final TextView mTextView = (TextView) findViewById(R.id.output);
-
+        
         // Instantiate the RequestQueue.
         RequestQueue queue = Volley.newRequestQueue(this);
         String url ="http://72.19.65.87:3000/lost";
@@ -95,11 +85,7 @@ public class ListLostItemsActivity extends AppCompatActivity {
                                 JSONObject json = response.getJSONArray("items").getJSONObject(i);
                                 titles.add(json.getString("title"));
                             }
-
-                            Toast.makeText(ListLostItemsActivity.this, jsonArray.toString(), Toast.LENGTH_LONG).show();
-
                             adapter.notifyDataSetChanged();
-                            // mTextView.setText(response.getJSONArray("items").toString());
                         } catch (Exception e) {
                             Toast.makeText(ListLostItemsActivity.this, e.toString(), Toast.LENGTH_LONG).show();
                         }
@@ -109,7 +95,7 @@ public class ListLostItemsActivity extends AppCompatActivity {
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                mTextView.setText("That didn't work!");
+                Toast.makeText(ListLostItemsActivity.this, error.toString(), Toast.LENGTH_LONG).show();
             }
         });
         // Add the request to the RequestQueue.
@@ -125,12 +111,9 @@ public class ListLostItemsActivity extends AppCompatActivity {
 
 
     private void renderList() {
-        // titles.add("hello");
-
         adapter = new ArrayAdapter(this,
                 android.R.layout.simple_list_item_1, titles);
         listview.setAdapter(adapter);
-
     }
 
 }
