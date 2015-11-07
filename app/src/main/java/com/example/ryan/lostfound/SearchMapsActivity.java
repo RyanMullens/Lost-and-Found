@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -23,11 +24,14 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -39,6 +43,7 @@ public class SearchMapsActivity extends FragmentActivity implements OnMapReadyCa
     private GoogleApiClient mGoogleApiClient;
     private ArrayList<LatLng> clickedPoints;
     private ArrayList<LatLng> initialPoints;
+    private ArrayList<LatLng> checkedPoints;
     private int drawMode;
     private final int POINT = 0;
     private final int PATH = 1;
@@ -57,12 +62,70 @@ public class SearchMapsActivity extends FragmentActivity implements OnMapReadyCa
 
         clickedPoints = new ArrayList<LatLng>();
         initialPoints = new ArrayList<LatLng>();
+        checkedPoints = new ArrayList<LatLng>();
 
-
+        getList();
 
         drawMode = PATH;
         buildGoogleApiClient();
 
+    }
+
+    private void getList() {
+
+        // Instantiate the RequestQueue.
+        RequestQueue queue = Volley.newRequestQueue(this);
+
+        Intent myIntent = getIntent();
+        String id = myIntent.getStringExtra("id");
+        String url ="http://72.19.65.87:3000/lost/"+id;
+
+        // Request a string response from the provided URL.
+        JsonObjectRequest stringRequest = new JsonObjectRequest(Request.Method.GET, url, null,
+                new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        // Display the first 500 characters of the response string.
+                        try {
+
+
+                            drawMode = response.getJSONObject("location").getInt("typeLocation");
+
+                            JSONArray j = response.getJSONObject("location").getJSONArray("points");
+
+                            for(int i = 0; i < j.length(); i++) {
+                                double lat = j.getJSONObject(i).getDouble("lat");
+                                double lng = j.getJSONObject(i).getDouble("long");
+                                initialPoints.add(new LatLng(lat, lng));
+                                //Toast.makeText(SearchMapsActivity.this, ""+i + " " + lat + " " + lng, Toast.LENGTH_LONG).show();
+                            }
+
+                            JSONArray checked = response.getJSONArray("checkedLocations");
+
+                            for(int i = 0; i < checked.length(); i++) {
+                                double lat = checked.getJSONObject(i).getDouble("lat");
+                                double lng = checked.getJSONObject(i).getDouble("long");
+                                checkedPoints.add(new LatLng(lat, lng));
+                                //Toast.makeText(SearchMapsActivity.this, ""+i + " " + lat + " " + lng, Toast.LENGTH_LONG).show();
+                            }
+                            //
+                            drawMap();
+
+                        } catch (Exception e) {
+                            Log.d("ERROR", e.toString());
+                        }
+
+
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.d("HEY", "did not work");
+            }
+        });
+        // Add the request to the RequestQueue.
+        queue.add(stringRequest);
     }
 
     protected synchronized void buildGoogleApiClient() {
@@ -90,12 +153,12 @@ public class SearchMapsActivity extends FragmentActivity implements OnMapReadyCa
 
         mMap.setOnMapClickListener(this);
         mMap.setOnMapLongClickListener(this);
-        drawSearchPoints();
+        drawMap();
     }
 
     public void onMapClick(LatLng point) {
         clickedPoints.add(point);
-        drawClickedPoints();
+        drawMap();
     }
 
     public void onMapLongClick(LatLng point) {
@@ -103,6 +166,13 @@ public class SearchMapsActivity extends FragmentActivity implements OnMapReadyCa
             clickedPoints.remove(clickedPoints.size() - 1);
         }
 
+        drawMap();
+    }
+
+    private void drawMap() {
+        mMap.clear();
+        drawSearchPoints();
+        drawCheckedPoints();
         drawClickedPoints();
     }
 
@@ -110,6 +180,9 @@ public class SearchMapsActivity extends FragmentActivity implements OnMapReadyCa
         if (initialPoints.size() == 0) {
             return;
         }
+
+        Toast.makeText(SearchMapsActivity.this, "" + initialPoints.get(0).latitude + " ", Toast.LENGTH_LONG).show();
+
 
         switch (drawMode) {
             case POINT:
@@ -145,8 +218,6 @@ public class SearchMapsActivity extends FragmentActivity implements OnMapReadyCa
     }
 
     private void drawClickedPoints() {
-        mMap.clear();
-        drawSearchPoints();
 
         if (clickedPoints.size() == 0) {
             return;
@@ -163,56 +234,27 @@ public class SearchMapsActivity extends FragmentActivity implements OnMapReadyCa
         }
     }
 
-
-    private void getList() {
-
-        // Instantiate the RequestQueue.
-        RequestQueue queue = Volley.newRequestQueue(this);
-
-        Intent myIntent = getIntent();
-        String id = myIntent.getStringExtra("id");
-        String url ="http://72.19.65.87:3000/lost/"+id;
-
-        // Request a string response from the provided URL.
-        JsonObjectRequest stringRequest = new JsonObjectRequest(Request.Method.GET, url, null,
-                new Response.Listener<JSONObject>() {
-
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        // Display the first 500 characters of the response string.
-                        try {
-                            Log.d("HEY", response.toString());
-
-                        } catch (Exception e) {
-
-                        }
+    private void drawCheckedPoints() {
 
 
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.d("HEY", "did not work");
-            }
-        });
-        // Add the request to the RequestQueue.
-        queue.add(stringRequest);
+        if (checkedPoints.size() == 0) {
+            return;
+        }
+
+        switch (drawMode) {
+            default:
+                for (LatLng point : checkedPoints) {
+                    MarkerOptions markerOptions = new MarkerOptions().position(point);
+                    markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+                    mMap.addMarker(markerOptions);
+                }
+
+                break;
+        }
     }
 
-    public void changeModeToPath(View view) {
-        drawMode = PATH;
-        drawClickedPoints();
-    }
 
-    public void changeModeToArea(View view) {
-        drawMode = AREA;
-        drawClickedPoints();
-    }
 
-    public void changeModeToPoint(View view) {
-        drawMode = POINT;
-        drawClickedPoints();
-    }
 
     @Override
     public void onConnected(Bundle bundle) {
@@ -225,10 +267,8 @@ public class SearchMapsActivity extends FragmentActivity implements OnMapReadyCa
 
         double currentLat = currentLocation.latitude;
         double currentLng = currentLocation.longitude;
-        initialPoints.add(new LatLng(currentLat + 0.01, currentLng - 0.01));
-        initialPoints.add(new LatLng(currentLat, currentLng + 0.01));
-        initialPoints.add(new LatLng(currentLat - 0.01, currentLng));
-        drawSearchPoints();
+
+        drawMap();
     }
 
     @Override
@@ -258,6 +298,49 @@ public class SearchMapsActivity extends FragmentActivity implements OnMapReadyCa
     }
 
     public void addPoints(View view) {
+        // Instantiate the RequestQueue.
+        RequestQueue queue = Volley.newRequestQueue(this);
+
+        Intent myIntent = getIntent();
+        String id = myIntent.getStringExtra("id");
+        String url ="http://72.19.65.87:3000/lost/"+id +"/check";
+        Toast.makeText(SearchMapsActivity.this, url, Toast.LENGTH_LONG).show();
+
+        JSONArray points = new JSONArray();
+        JSONObject body = new JSONObject();
+        try {
+            for(int i = 0;i<clickedPoints.size();i++){
+             JSONObject point = new JSONObject();
+                point.put("lat",clickedPoints.get(i).latitude);
+                point.put("long",clickedPoints.get(i).longitude);
+                points.put(point);
+            }
+
+            body.put("points", points);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        // Request a string response from the provided URL.
+        JsonObjectRequest stringRequest = new JsonObjectRequest(Request.Method.POST, url, body,
+                new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Toast.makeText(SearchMapsActivity.this, response.toString(), Toast.LENGTH_LONG).show();
+                        checkedPoints.addAll(clickedPoints);
+                        clickedPoints.clear();
+                        drawMap();
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.d("HEY", error.getMessage());
+            }
+        });
+        // Add the request to the RequestQueue.
+        queue.add(stringRequest);
+
 
     }
 

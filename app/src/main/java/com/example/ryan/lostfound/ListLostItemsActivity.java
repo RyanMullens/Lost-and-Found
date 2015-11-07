@@ -3,6 +3,7 @@ package com.example.ryan.lostfound;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -87,17 +88,20 @@ public class ListLostItemsActivity extends AppCompatActivity {
                     public void onResponse(JSONObject response) {
                         // Display the first 500 characters of the response string.
                         try {
+                            titles.clear();
                             jsonArray = response.getJSONArray("items");
-
+                            Log.d("--------", jsonArray.toString());
                             for (int i = 0; i < jsonArray.length(); i++) {
                                 JSONObject json = response.getJSONArray("items").getJSONObject(i);
                                 titles.add(json.getString("title"));
                             }
 
+                            Toast.makeText(ListLostItemsActivity.this, jsonArray.toString(), Toast.LENGTH_LONG).show();
+
                             adapter.notifyDataSetChanged();
                             // mTextView.setText(response.getJSONArray("items").toString());
                         } catch (Exception e) {
-
+                            Toast.makeText(ListLostItemsActivity.this, e.toString(), Toast.LENGTH_LONG).show();
                         }
 
 
