@@ -122,7 +122,7 @@ public class CreateLostItemActivity extends AppCompatActivity {
                     }
 
                     mLocation.put("points", locationList);
-                    mLocation.put("type", type);
+                    mLocation.put("typeLocation", type);
 
                 }catch(Exception e){
                     Toast.makeText(CreateLostItemActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
