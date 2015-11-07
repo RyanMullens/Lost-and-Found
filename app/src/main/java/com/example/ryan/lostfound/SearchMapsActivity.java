@@ -49,12 +49,17 @@ public class SearchMapsActivity extends FragmentActivity implements OnMapReadyCa
     private final int PATH = 1;
     private final int AREA = 2;
 
+    private String server;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search_maps);
+
+        server = getString(R.string.server_url);
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -78,7 +83,7 @@ public class SearchMapsActivity extends FragmentActivity implements OnMapReadyCa
 
         Intent myIntent = getIntent();
         String id = myIntent.getStringExtra("id");
-        String url ="http://72.19.65.87:3000/lost/"+id;
+        String url =server + "/lost/"+id;
 
         // Request a string response from the provided URL.
         JsonObjectRequest stringRequest = new JsonObjectRequest(Request.Method.GET, url, null,
@@ -298,7 +303,7 @@ public class SearchMapsActivity extends FragmentActivity implements OnMapReadyCa
 
         Intent myIntent = getIntent();
         String id = myIntent.getStringExtra("id");
-        String url ="http://72.19.65.87:3000/lost/"+id +"/check";
+        String url =server + "/lost/"+id +"/check";
 
         JSONArray points = new JSONArray();
         JSONObject body = new JSONObject();

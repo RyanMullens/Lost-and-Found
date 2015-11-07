@@ -65,10 +65,10 @@ public class ListLostItemsActivity extends AppCompatActivity {
     }
 
     private void getList() {
-        
+
         // Instantiate the RequestQueue.
         RequestQueue queue = Volley.newRequestQueue(this);
-        String url ="http://72.19.65.87:3000/lost";
+        String url = getString(R.string.server_url) + "/lost";
 
         // Request a string response from the provided URL.
         JsonObjectRequest stringRequest = new JsonObjectRequest(Request.Method.GET, url, null,

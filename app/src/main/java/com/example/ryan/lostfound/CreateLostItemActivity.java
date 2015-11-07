@@ -44,7 +44,7 @@ public class CreateLostItemActivity extends AppCompatActivity {
 
     public void createLostItem(View view){
 
-        String server = "http://72.19.65.87:3000";
+        String server = getString(R.string.server_url);
         String path = "/lost";
 
         String url = server + path;
@@ -68,7 +68,7 @@ public class CreateLostItemActivity extends AppCompatActivity {
 
                     @Override
                     public void onResponse(JSONObject response) {
-
+                        Toast.makeText(CreateLostItemActivity.this, "Created new lost item", Toast.LENGTH_SHORT).show();
                     }
                 }, new Response.ErrorListener() {
 
@@ -81,9 +81,6 @@ public class CreateLostItemActivity extends AppCompatActivity {
 
         // Access the RequestQueue through your singleton class.
         queue.add(jsObjRequest);
-
-
-        Toast.makeText(CreateLostItemActivity.this, "Created new lost item", Toast.LENGTH_SHORT).show();
     }
 
     public void getLocation(View view){
