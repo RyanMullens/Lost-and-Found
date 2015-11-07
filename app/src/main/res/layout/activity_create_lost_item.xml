@@ -19,7 +19,7 @@
     <EditText
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/editText"
+        android:id="@+id/editTitleText"
         android:layout_below="@+id/textView2"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
@@ -32,7 +32,7 @@
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:text="Description"
         android:id="@+id/textView"
-        android:layout_below="@+id/editText"
+        android:layout_below="@+id/editTitleText"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
 
@@ -41,7 +41,7 @@
         android:layout_height="wrap_content"
         android:inputType="textMultiLine"
         android:ems="10"
-        android:id="@+id/editText2"
+        android:id="@+id/editDescriptionText"
         android:layout_below="@+id/textView"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
@@ -50,7 +50,7 @@
     <EditText
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/editText3"
+        android:id="@+id/editEmailText"
         android:inputType="textEmailAddress"
         android:layout_below="@+id/textView3"
         android:layout_alignParentLeft="true"
@@ -62,7 +62,7 @@
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:text="Email"
         android:id="@+id/textView3"
-        android:layout_below="@+id/editText2"
+        android:layout_below="@+id/editDescriptionText"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
 
@@ -71,7 +71,7 @@
         android:layout_height="wrap_content"
         android:text="Set Location"
         android:id="@+id/setLocationButton"
-        android:layout_below="@+id/editText3"
+        android:layout_below="@id/editEmailText"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
         android:onClick="getLocation"
